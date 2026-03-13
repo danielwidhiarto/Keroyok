@@ -1,0 +1,112 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── Helper Functions ───────────────────────────────────────────────────
+
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isAuth() && request.auth.uid == uid;
+    }
+
+    function affectedFields() {
+      return request.resource.data.diff(resource.data).affectedKeys();
+    }
+
+    // ─── Users ──────────────────────────────────────────────────────────────
+
+    match /users/{uid} {
+      // Anyone logged in can view profiles
+      allow read: if isAuth();
+
+      // Only create your own profile
+      allow create: if isOwner(uid)
+        && request.resource.data.uid == request.auth.uid;
+
+      // Only update your own profile; reputation/level can be updated by anyone (awarded by system)
+      allow update: if isOwner(uid)
+        || (
+          isAuth()
+          && affectedFields().hasOnly(['reputation', 'level'])
+          && request.resource.data.reputation >= resource.data.reputation
+        );
+    }
+
+    // ─── Problems ───────────────────────────────────────────────────────────
+
+    match /problems/{problemId} {
+      allow read: if isAuth();
+
+      // Create: must be logged in, authorId must match caller
+      allow create: if isAuth()
+        && request.resource.data.authorId == request.auth.uid
+        && request.resource.data.status == 'open';
+
+      allow update: if isAuth() && (
+        // Author can update anything on their own problem
+        resource.data.authorId == request.auth.uid
+
+        // Anyone can upvote/downvote
+        || affectedFields().hasOnly(['upvoteCount', 'upvotedBy'])
+
+        // Reply creation updates replyCount + status
+        || affectedFields().hasOnly(['replyCount', 'status', 'updatedAt'])
+
+        // Solve updates (triggered when reply is chosen)
+        || (
+          affectedFields().hasOnly(['status', 'solvedByUid', 'solvedByName', 'updatedAt'])
+          && request.resource.data.status == 'solved'
+        )
+      );
+
+      // Replies subcollection
+      match /replies/{replyId} {
+        allow read: if isAuth();
+
+        allow create: if isAuth()
+          && request.resource.data.authorId == request.auth.uid
+          && request.resource.data.isChosen == false
+          && request.resource.data.upvoteCount == 0;
+
+        allow update: if isAuth() && (
+          // Reply author can edit content (but not isChosen or upvotes directly)
+          (
+            resource.data.authorId == request.auth.uid
+            && !affectedFields().hasAny(['isChosen'])
+          )
+
+          // Anyone can upvote/downvote a reply
+          || affectedFields().hasOnly(['upvoteCount', 'upvotedBy'])
+
+          // Only the problem's OP can mark a reply as chosen
+          || (
+            affectedFields().hasOnly(['isChosen'])
+            && request.resource.data.isChosen == true
+            && get(/databases/$(database)/documents/problems/$(problemId)).data.authorId == request.auth.uid
+          )
+        );
+      }
+    }
+
+    // ─── Notifications ───────────────────────────────────────────────────────
+
+    match /notifications/{notifId} {
+      // Only the recipient can read their own notifications
+      allow read: if isOwner(resource.data.userId);
+
+      // Any logged-in user can create a notification (e.g., when posting reply/solution)
+      allow create: if isAuth()
+        && request.resource.data.read == false;
+
+      // Only the recipient can update (mark as read)
+      allow update: if isOwner(resource.data.userId)
+        && affectedFields().hasOnly(['read']);
+
+      // Only the recipient can delete
+      allow delete: if isOwner(resource.data.userId);
+    }
+  }
+}

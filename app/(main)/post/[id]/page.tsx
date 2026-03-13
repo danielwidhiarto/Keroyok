@@ -1,0 +1,362 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { motion } from "framer-motion";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import SkillBadge from "@/components/SkillBadge";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  getProblem,
+  getReplies,
+  createReply,
+  upvoteReply,
+  setReplyChosen,
+  upvoteProblem,
+  addReputation,
+  createNotification,
+  markProblemSolved,
+} from "@/lib/firebase/firestore";
+import { POINTS } from "@/constants/levels";
+import { formatDistanceToNow } from "@/lib/utils";
+import type { Problem, Reply } from "@/types";
+import { ChevronUp, Check, Coffee, Loader2 } from "lucide-react";
+import Link from "next/link";
+
+const URGENCY_CONFIG = {
+  santai: { label: "Santai", class: "bg-green-100 text-green-700" },
+  "butuh-cepat": {
+    label: "Butuh Cepat",
+    class: "bg-yellow-100 text-yellow-700",
+  },
+  urgent: { label: "Urgent", class: "bg-red-100 text-red-700" },
+};
+
+const STATUS_CONFIG = {
+  open: { label: "Open", class: "bg-blue-100 text-blue-700" },
+  "in-progress": {
+    label: "In Progress",
+    class: "bg-purple-100 text-purple-700",
+  },
+  solved: { label: "✅ Solved", class: "bg-emerald-100 text-emerald-700" },
+};
+
+export default function PostDetailPage() {
+  const params = useParams();
+  const id = params.id as string;
+  const { user, profile } = useAuth();
+
+  const [problem, setProblem] = useState<Problem | null>(null);
+  const [replies, setReplies] = useState<Reply[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [replyContent, setReplyContent] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  async function load() {
+    const [p, r] = await Promise.all([getProblem(id), getReplies(id)]);
+    setProblem(p);
+    setReplies(r);
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    load();
+  }, [id]);
+
+  async function handleUpvoteProblem() {
+    if (!user || !problem) return;
+    const hasUpvoted = problem.upvotedBy.includes(user.uid);
+    await upvoteProblem(id, user.uid, hasUpvoted);
+    setProblem((p) =>
+      p
+        ? {
+            ...p,
+            upvoteCount: p.upvoteCount + (hasUpvoted ? -1 : 1),
+            upvotedBy: hasUpvoted
+              ? p.upvotedBy.filter((uid) => uid !== user.uid)
+              : [...p.upvotedBy, user.uid],
+          }
+        : p,
+    );
+  }
+
+  async function handleUpvoteReply(reply: Reply) {
+    if (!user) return;
+    const hasUpvoted = reply.upvotedBy.includes(user.uid);
+    await upvoteReply(id, reply.id, user.uid, hasUpvoted);
+    if (!hasUpvoted) {
+      await addReputation(reply.authorId, POINTS.SOLUTION_UPVOTED);
+    }
+    setReplies((prev) =>
+      prev.map((r) =>
+        r.id === reply.id
+          ? {
+              ...r,
+              upvoteCount: r.upvoteCount + (hasUpvoted ? -1 : 1),
+              upvotedBy: hasUpvoted
+                ? r.upvotedBy.filter((uid) => uid !== user.uid)
+                : [...r.upvotedBy, user.uid],
+            }
+          : r,
+      ),
+    );
+  }
+
+  async function handleChooseReply(reply: Reply) {
+    if (!user || !problem) return;
+    await setReplyChosen(id, reply.id);
+    await markProblemSolved(id, reply.authorId, reply.authorName);
+    await addReputation(reply.authorId, POINTS.SOLUTION_CHOSEN);
+    await createNotification({
+      userId: reply.authorId,
+      type: "solved",
+      problemId: id,
+      problemTitle: problem.title,
+      message: `Solusimu untuk "${problem.title}" dipilih sebagai jawaban terbaik! 🎉`,
+    });
+    await load();
+  }
+
+  async function handleSubmitReply() {
+    if (!user || !profile || !replyContent.trim()) return;
+    setSubmitting(true);
+    try {
+      await createReply({
+        problemId: id,
+        authorId: user.uid,
+        authorName: profile.displayName,
+        authorPhotoURL: profile.photoURL,
+        content: replyContent.trim(),
+      });
+      await addReputation(user.uid, POINTS.GIVE_SOLUTION);
+      if (problem) {
+        await createNotification({
+          userId: problem.authorId,
+          type: "reply",
+          problemId: id,
+          problemTitle: problem.title,
+          message: `${profile.displayName} membalas masalahmu`,
+        });
+      }
+      setReplyContent("");
+      await load();
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-16">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!problem) {
+    return (
+      <div className="text-center py-16 text-muted-foreground">
+        Masalah tidak ditemukan.
+      </div>
+    );
+  }
+
+  const isOP = user?.uid === problem.authorId;
+  const hasUpvotedProblem = user ? problem.upvotedBy.includes(user.uid) : false;
+  const urgency = URGENCY_CONFIG[problem.urgency];
+  const status = STATUS_CONFIG[problem.status];
+
+  return (
+    <div className="max-w-2xl mx-auto space-y-6">
+      {/* Problem header */}
+      <div className="rounded-2xl border bg-card p-6">
+        <div className="flex items-start gap-4">
+          <button
+            onClick={handleUpvoteProblem}
+            className={`flex flex-col items-center gap-0.5 rounded-lg border p-2 transition-colors ${
+              hasUpvotedProblem
+                ? "border-primary bg-primary/10 text-primary"
+                : "border-border hover:border-primary/50"
+            }`}
+          >
+            <ChevronUp className="h-5 w-5" />
+            <span className="text-sm font-semibold">{problem.upvoteCount}</span>
+          </button>
+
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-wrap items-center gap-1.5 mb-3">
+              <span
+                className={`rounded-full px-2 py-0.5 text-xs font-medium ${urgency.class}`}
+              >
+                {urgency.label}
+              </span>
+              <span
+                className={`rounded-full px-2 py-0.5 text-xs font-medium ${status.class}`}
+              >
+                {status.label}
+              </span>
+              {problem.tags.map((tag) => (
+                <SkillBadge key={tag} skill={tag} />
+              ))}
+            </div>
+
+            <h1 className="text-xl font-bold mb-3">{problem.title}</h1>
+            <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
+              {problem.description}
+            </p>
+
+            <div className="mt-4 flex items-center gap-2">
+              <Avatar className="h-6 w-6">
+                <AvatarImage src={problem.authorPhotoURL ?? undefined} />
+                <AvatarFallback className="text-xs">
+                  {problem.authorName?.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+              <Link
+                href={`/profile/${problem.authorId}`}
+                className="text-xs font-medium hover:underline"
+              >
+                {problem.authorName}
+              </Link>
+              <span className="text-xs text-muted-foreground">·</span>
+              <span className="text-xs text-muted-foreground">
+                {problem.createdAt?.toDate
+                  ? formatDistanceToNow(problem.createdAt.toDate())
+                  : ""}
+              </span>
+            </div>
+
+            {problem.status === "solved" && problem.solvedByName && (
+              <div className="mt-3 rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 text-sm text-emerald-700">
+                Diselesaikan oleh <strong>{problem.solvedByName}</strong>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Replies */}
+      <div>
+        <h2 className="font-semibold mb-3">{replies.length} Solusi</h2>
+        <div className="space-y-3">
+          {replies.map((reply) => {
+            const hasUpvoted = user
+              ? reply.upvotedBy.includes(user.uid)
+              : false;
+            return (
+              <motion.div
+                key={reply.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`rounded-xl border bg-card p-4 ${reply.isChosen ? "border-emerald-400 bg-emerald-50/50" : ""}`}
+              >
+                {reply.isChosen && (
+                  <div className="flex items-center gap-1.5 text-emerald-600 text-xs font-medium mb-2">
+                    <Check className="h-3.5 w-3.5" />
+                    Solusi Terbaik
+                  </div>
+                )}
+                <div className="flex items-start gap-3">
+                  <button
+                    onClick={() => handleUpvoteReply(reply)}
+                    className={`flex flex-col items-center gap-0.5 rounded-lg border p-1.5 transition-colors shrink-0 ${
+                      hasUpvoted
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border hover:border-primary/50"
+                    }`}
+                  >
+                    <ChevronUp className="h-4 w-4" />
+                    <span className="text-xs">{reply.upvoteCount}</span>
+                  </button>
+
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                      {reply.content}
+                    </p>
+                    <div className="mt-2 flex items-center justify-between flex-wrap gap-2">
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-5 w-5">
+                          <AvatarImage
+                            src={reply.authorPhotoURL ?? undefined}
+                          />
+                          <AvatarFallback className="text-xs">
+                            {reply.authorName?.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <Link
+                          href={`/profile/${reply.authorId}`}
+                          className="text-xs font-medium hover:underline"
+                        >
+                          {reply.authorName}
+                        </Link>
+                        <span className="text-xs text-muted-foreground">
+                          {reply.createdAt?.toDate
+                            ? formatDistanceToNow(reply.createdAt.toDate())
+                            : ""}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {isOP &&
+                          !problem.status.includes("solved") &&
+                          !reply.isChosen && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 text-xs gap-1 border-emerald-400 text-emerald-700 hover:bg-emerald-50"
+                              onClick={() => handleChooseReply(reply)}
+                            >
+                              <Check className="h-3 w-3" />
+                              Pilih Solusi
+                            </Button>
+                          )}
+                        {reply.isChosen && (
+                          <a
+                            href={`/profile/${reply.authorId}`}
+                            className="flex items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-xs text-amber-700 hover:bg-amber-100 transition-colors"
+                          >
+                            <Coffee className="h-3.5 w-3.5" />
+                            Traktir {reply.authorName.split(" ")[0]}
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Reply form */}
+      {problem.status !== "solved" && (
+        <div className="rounded-xl border bg-card p-4">
+          <h3 className="font-medium mb-3">Tulis Solusi</h3>
+          <Textarea
+            value={replyContent}
+            onChange={(e) => setReplyContent(e.target.value)}
+            placeholder="Bagikan solusi atau pertanyaan klarifikasimu..."
+            rows={4}
+            className="mb-3"
+          />
+          <Button
+            onClick={handleSubmitReply}
+            disabled={!replyContent.trim() || submitting}
+            className="w-full"
+          >
+            {submitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Mengirim...
+              </>
+            ) : (
+              "Kirim Solusi"
+            )}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
