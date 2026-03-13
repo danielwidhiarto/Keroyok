@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
@@ -60,7 +60,6 @@ const FEATURES = [
   { icon: Star, label: "Solusi Terverifikasi", desc: "Pilih jawaban terbaik langsung" },
 ];
 
-// Fake feed preview
 const PREVIEW_POSTS = [
   {
     title: "Butuh advice soal struktur database untuk SaaS multi-tenant",
@@ -97,9 +96,6 @@ const URGENCY_LABEL: Record<string, string> = {
   urgent: "Urgent",
 };
 
-/* ─────────────────────────────────────────
-   Decorative elements
-───────────────────────────────────────── */
 function CrescentMoon({ className = "" }: { className?: string }) {
   return (
     <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
@@ -129,12 +125,24 @@ function LanternSVG({ className = "" }: { className?: string }) {
   );
 }
 
-/* ─────────────────────────────────────────
-   Main Component
-───────────────────────────────────────── */
 export default function RootPage() {
   const { user, profile, loading } = useAuth();
   const router = useRouter();
+  const [stars, setStars] = useState<{ id: number; width: number; height: number; top: string; left: string; duration: number; delay: number }[]>([]);
+
+  useEffect(() => {
+    // Generate star data only on client side to avoid hydration mismatch
+    const newStars = [...Array(30)].map((_, i) => ({
+      id: i,
+      width: Math.random() * 2.5 + 1,
+      height: Math.random() * 2.5 + 1,
+      top: `${Math.random() * 100}%`,
+      left: `${Math.random() * 100}%`,
+      duration: 2.5 + Math.random() * 3,
+      delay: Math.random() * 5,
+    }));
+    setStars(newStars);
+  }, []);
 
   useEffect(() => {
     if (loading) return;
@@ -149,34 +157,32 @@ export default function RootPage() {
 
   return (
     <div className="landing-page">
-      {/* ── Fixed BG ── */}
       <div className="landing-bg" />
       <div className="orb orb-gold" />
       <div className="orb orb-green" />
       <div className="orb orb-bottom" />
 
-      {/* ── Star particles ── */}
-      {[...Array(30)].map((_, i) => (
+      {/* ── Star particles (rendered only on client) ── */}
+      {stars.map((star) => (
         <motion.div
-          key={i}
+          key={star.id}
           className="star"
           style={{
-            width: Math.random() * 2.5 + 1,
-            height: Math.random() * 2.5 + 1,
-            top: `${Math.random() * 100}%`,
-            left: `${Math.random() * 100}%`,
+            width: star.width,
+            height: star.height,
+            top: star.top,
+            left: star.left,
             position: "fixed",
           }}
           animate={{ opacity: [0.1, 0.85, 0.1] }}
           transition={{
-            duration: 2.5 + Math.random() * 3,
+            duration: star.duration,
             repeat: Infinity,
-            delay: Math.random() * 5,
+            delay: star.delay,
           }}
         />
       ))}
 
-      {/* ── Lanterns (decoratif Ramadhan) ── */}
       <motion.div
         className="lantern lantern-left text-amber-400"
         animate={{ y: [0, -16, 0], rotate: [0, 4, -4, 0] }}
@@ -192,7 +198,6 @@ export default function RootPage() {
         <LanternSVG className="w-10 h-20" />
       </motion.div>
 
-      {/* ── Crescent moon deco ── */}
       <motion.div
         className="crescent text-amber-300"
         animate={{ rotate: [0, 6, 0] }}
@@ -201,9 +206,6 @@ export default function RootPage() {
         <CrescentMoon className="w-20 h-20" />
       </motion.div>
 
-      {/* ════════════════════════════════════
-          NAVBAR
-      ════════════════════════════════════ */}
       <nav className="landing-nav">
         <div className="landing-nav-inner">
           <div className="flex items-center gap-2">
@@ -223,11 +225,7 @@ export default function RootPage() {
         </div>
       </nav>
 
-      {/* ════════════════════════════════════
-          HERO
-      ════════════════════════════════════ */}
       <section className="hero-section">
-        {/* Tagline badge */}
         <motion.div
           initial={{ opacity: 0, y: 18, scale: 0.9 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -238,7 +236,6 @@ export default function RootPage() {
           <span>Komunitas problem-solving berbasis AI</span>
         </motion.div>
 
-        {/* Headline */}
         <motion.h1
           initial={{ opacity: 0, y: 28 }}
           animate={{ opacity: 1, y: 0 }}
@@ -249,7 +246,6 @@ export default function RootPage() {
           <span className="hero-h1-gradient">diselesaikan bareng</span>
         </motion.h1>
 
-        {/* Sub */}
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -260,7 +256,6 @@ export default function RootPage() {
           lalu komunitas keroyok bareng. Dari coding, desain, bisnis, hukum — semua ada ahlinya.
         </motion.p>
 
-        {/* CTA */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -276,7 +271,6 @@ export default function RootPage() {
           </button>
         </motion.div>
 
-        {/* Social proof */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -293,7 +287,6 @@ export default function RootPage() {
           </span>
         </motion.div>
 
-        {/* Scroll indicator */}
         <motion.div
           className="scroll-hint"
           animate={{ y: [0, 8, 0] }}
@@ -304,9 +297,6 @@ export default function RootPage() {
         </motion.div>
       </section>
 
-      {/* ════════════════════════════════════
-          PREVIEW FEED (mock)
-      ════════════════════════════════════ */}
       <section className="section">
         <div className="section-inner">
           <motion.div
@@ -359,7 +349,6 @@ export default function RootPage() {
               </motion.div>
             ))}
 
-            {/* CTA overlay */}
             <div className="preview-cta-overlay">
               <button onClick={handleLogin} className="cta-hero-btn">
                 Masuk untuk lihat semua
@@ -370,9 +359,6 @@ export default function RootPage() {
         </div>
       </section>
 
-      {/* ════════════════════════════════════
-          HOW IT WORKS
-      ════════════════════════════════════ */}
       <section className="section">
         <div className="section-inner">
           <motion.div
@@ -408,9 +394,6 @@ export default function RootPage() {
         </div>
       </section>
 
-      {/* ════════════════════════════════════
-          FEATURES
-      ════════════════════════════════════ */}
       <section className="section">
         <div className="section-inner">
           <motion.div
@@ -449,9 +432,6 @@ export default function RootPage() {
         </div>
       </section>
 
-      {/* ════════════════════════════════════
-          BOTTOM CTA
-      ════════════════════════════════════ */}
       <section className="section pb-28">
         <motion.div
           initial={{ opacity: 0, y: 28 }}
@@ -476,7 +456,6 @@ export default function RootPage() {
         </motion.div>
       </section>
 
-      {/* ── Footer ── */}
       <footer className="landing-footer">
         <div className="flex items-center justify-center gap-2 mb-2">
           <div className="landing-logo-icon">

@@ -14,21 +14,21 @@ import { Trophy, Loader2, Crown, Medal } from "lucide-react";
 const RANK_STYLE = [
   {
     medal: "🥇",
-    ring: "ring-yellow-400",
-    bg: "bg-gradient-to-br from-yellow-50 to-amber-50 border-yellow-200",
-    accent: "text-yellow-600",
+    ring: "ring-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.3)]",
+    bg: "border-amber-400/40 bg-gradient-to-br from-amber-400/20 via-amber-400/5 to-transparent",
+    accent: "text-amber-300",
   },
   {
     medal: "🥈",
-    ring: "ring-gray-300",
-    bg: "bg-gradient-to-br from-gray-50 to-slate-50 border-gray-200",
-    accent: "text-gray-500",
+    ring: "ring-slate-300",
+    bg: "border-slate-300/30 bg-gradient-to-br from-slate-300/15 via-slate-300/5 to-transparent",
+    accent: "text-slate-100",
   },
   {
     medal: "🥉",
-    ring: "ring-amber-600",
-    bg: "bg-gradient-to-br from-orange-50 to-amber-50 border-amber-200",
-    accent: "text-amber-600",
+    ring: "ring-orange-400",
+    bg: "border-orange-400/30 bg-gradient-to-br from-orange-400/15 via-orange-400/5 to-transparent",
+    accent: "text-orange-200",
   },
 ];
 
@@ -46,13 +46,13 @@ export default function LeaderboardPage() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <div className="flex items-center gap-2.5 mb-6">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-yellow-100">
-          <Trophy className="h-5 w-5 text-yellow-600" />
+      <div className="flex items-center gap-3 mb-8">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-400/15 border border-amber-400/30 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
+          <Trophy className="h-6 w-6 text-amber-400" />
         </div>
         <div>
-          <h1 className="text-xl font-bold">Leaderboard</h1>
-          <p className="text-xs text-muted-foreground">Top helpers komunitas</p>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Leaderboard</h1>
+          <p className="text-xs text-slate-400 font-medium">Top helpers komunitas Keroyok 🌙</p>
         </div>
       </div>
 
@@ -77,12 +77,12 @@ export default function LeaderboardPage() {
               >
                 <Link href={`/profile/${helper.uid}`}>
                   <div
-                    className={`flex items-center gap-4 rounded-2xl border p-4 transition-all hover:shadow-md hover:shadow-primary/5 ${
+                    className={`flex items-center gap-4 rounded-2xl border transition-all duration-300 p-4 backdrop-blur-sm ${
                       isTop3
                         ? rankStyle.bg
                         : isCurrentUser
-                          ? "border-primary bg-primary/5"
-                          : "bg-card hover:border-primary/40"
+                          ? "border-amber-400/40 bg-amber-400/10 shadow-[0_0_20px_rgba(245,158,11,0.05)]"
+                          : "border-white/5 bg-white/5 hover:border-white/20 hover:bg-white/10"
                     }`}
                   >
                     <div className="w-8 text-center shrink-0">

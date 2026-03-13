@@ -23,19 +23,19 @@ function EmptyState({
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="flex flex-col items-center justify-center rounded-2xl border border-dashed py-16 text-center"
+      className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-white/10 bg-white/5 py-16 text-center backdrop-blur-sm"
     >
-      <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
-        <Sparkles className="h-6 w-6 text-muted-foreground" />
+      <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-400/10 border border-amber-400/20">
+        <Sparkles className="h-6 w-6 text-amber-400" />
       </div>
-      <p className="text-sm text-muted-foreground">{message}</p>
+      <p className="text-sm text-slate-400">{message}</p>
       {showCta && (
         <Link
           href="/post/new"
-          className={cn(buttonVariants({ size: "sm" }), "mt-4 gap-1.5")}
+          className={cn(buttonVariants({ size: "sm" }), "mt-5 gap-2 bg-amber-400 text-amber-950 hover:bg-amber-300 transition-colors rounded-xl font-bold")}
         >
           <Plus className="h-4 w-4" />
-          Post Masalah Pertamamu
+          Post Masalah Pertama
         </Link>
       )}
     </motion.div>
@@ -46,18 +46,18 @@ function Skeleton() {
   return (
     <div className="flex flex-col gap-3">
       {[1, 2, 3].map((i) => (
-        <div key={i} className="rounded-2xl border bg-card p-4 animate-pulse">
+        <div key={i} className="rounded-2xl border border-white/5 bg-white/5 p-4 animate-pulse backdrop-blur-sm">
           <div className="flex items-center gap-2 mb-3">
-            <div className="h-6 w-6 rounded-full bg-muted" />
-            <div className="h-3 w-24 rounded-full bg-muted" />
+            <div className="h-6 w-6 rounded-full bg-white/10" />
+            <div className="h-3 w-24 rounded-full bg-white/10" />
           </div>
-          <div className="h-4 w-3/4 rounded-full bg-muted mb-2" />
-          <div className="h-3 w-full rounded-full bg-muted mb-2" />
-          <div className="h-3 w-2/3 rounded-full bg-muted mb-3" />
+          <div className="h-4 w-3/4 rounded-full bg-white/10 mb-2" />
+          <div className="h-3 w-full rounded-full bg-white/10 mb-2" />
+          <div className="h-3 w-2/3 rounded-full bg-white/10 mb-3" />
           <div className="flex gap-2">
-            <div className="h-5 w-14 rounded-full bg-muted" />
-            <div className="h-5 w-14 rounded-full bg-muted" />
-            <div className="h-5 w-16 rounded-full bg-muted" />
+            <div className="h-5 w-14 rounded-full bg-white/10" />
+            <div className="h-5 w-14 rounded-full bg-white/10" />
+            <div className="h-5 w-16 rounded-full bg-white/10" />
           </div>
         </div>
       ))}
@@ -133,15 +133,24 @@ export default function FeedPage() {
 
   return (
     <div>
-      <Tabs defaultValue="latest" onValueChange={handleTabChange}>
-        <TabsList className="mb-5 w-full">
-          <TabsTrigger value="latest" className="flex-1">
+      <Tabs defaultValue="latest" onValueChange={handleTabChange} className="w-full">
+        <TabsList className="mb-6 h-11 w-full gap-1 border border-white/5 bg-white/5 p-1 backdrop-blur-md overflow-hidden rounded-xl">
+          <TabsTrigger 
+            value="latest" 
+            className="flex-1 rounded-lg transition-all data-[state=active]:bg-amber-400 data-[state=active]:text-amber-950 data-[state=active]:font-bold data-[state=active]:shadow-lg"
+          >
             Terbaru
           </TabsTrigger>
-          <TabsTrigger value="trending" className="flex-1">
+          <TabsTrigger 
+            value="trending" 
+            className="flex-1 rounded-lg transition-all data-[state=active]:bg-amber-400 data-[state=active]:text-amber-950 data-[state=active]:font-bold data-[state=active]:shadow-lg"
+          >
             Trending
           </TabsTrigger>
-          <TabsTrigger value="match" className="flex-1">
+          <TabsTrigger 
+            value="match" 
+            className="flex-1 rounded-lg transition-all data-[state=active]:bg-amber-400 data-[state=active]:text-amber-950 data-[state=active]:font-bold data-[state=active]:shadow-lg"
+          >
             Untukku
           </TabsTrigger>
         </TabsList>

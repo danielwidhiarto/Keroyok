@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { signInWithGoogle } from "@/lib/firebase/auth";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Zap, Users, Brain, Trophy, ArrowLeft } from "lucide-react";
 
 const FEATURES = [
@@ -28,6 +28,21 @@ function MoonSmall() {
 export default function LoginPage() {
   const { user, profile, loading } = useAuth();
   const router = useRouter();
+  const [stars, setStars] = useState<{ id: number; width: number; height: number; top: string; left: string; duration: number; delay: number }[]>([]);
+
+  useEffect(() => {
+    // Generate star data only on client
+    const newStars = [...Array(18)].map((_, i) => ({
+      id: i,
+      width: Math.random() * 2 + 1,
+      height: Math.random() * 2 + 1,
+      top: `${Math.random() * 100}%`,
+      left: `${Math.random() * 100}%`,
+      duration: 2.5 + Math.random() * 3,
+      delay: Math.random() * 4,
+    }));
+    setStars(newStars);
+  }, []);
 
   useEffect(() => {
     if (!loading && user) {
@@ -50,32 +65,31 @@ export default function LoginPage() {
       <div className="orb orb-gold" style={{ opacity: 0.14 }} />
       <div className="orb orb-green" style={{ opacity: 0.1 }} />
 
-      {/* Stars */}
-      {[...Array(18)].map((_, i) => (
+      {/* Stars (rendered only on client) */}
+      {stars.map((star) => (
         <motion.div
-          key={i}
+          key={star.id}
           className="star"
           style={{
-            width: Math.random() * 2 + 1,
-            height: Math.random() * 2 + 1,
-            top: `${Math.random() * 100}%`,
-            left: `${Math.random() * 100}%`,
+            width: star.width,
+            height: star.height,
+            top: star.top,
+            left: star.left,
+            position: "fixed",
           }}
           animate={{ opacity: [0.1, 0.8, 0.1] }}
           transition={{
-            duration: 2.5 + Math.random() * 3,
+            duration: star.duration,
             repeat: Infinity,
-            delay: Math.random() * 4,
+            delay: star.delay,
           }}
         />
       ))}
 
-      {/* Moon deco */}
       <div className="absolute top-8 right-12 hidden sm:block">
         <MoonSmall />
       </div>
 
-      {/* Back button */}
       <motion.button
         initial={{ opacity: 0, x: -10 }}
         animate={{ opacity: 1, x: 0 }}
@@ -87,7 +101,6 @@ export default function LoginPage() {
         Kembali
       </motion.button>
 
-      {/* Card */}
       <div className="login-center">
         <motion.div
           initial={{ opacity: 0, y: 28 }}
@@ -95,7 +108,6 @@ export default function LoginPage() {
           transition={{ duration: 0.55, ease: "easeOut" }}
           className="login-card-wrap"
         >
-          {/* Brand */}
           <div className="login-brand">
             <motion.div
               initial={{ scale: 0.55, opacity: 0 }}
@@ -111,9 +123,7 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {/* Card */}
           <div className="login-card">
-            {/* Feature pills */}
             <div className="login-features">
               {FEATURES.map((f, i) => (
                 <motion.div
@@ -131,7 +141,6 @@ export default function LoginPage() {
               ))}
             </div>
 
-            {/* Google button */}
             <Button
               className="login-google-btn"
               size="lg"

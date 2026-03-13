@@ -8,24 +8,27 @@ import { formatDistanceToNow } from "@/lib/utils";
 const URGENCY_CONFIG = {
   santai: {
     label: "Santai",
-    class: "bg-green-100 text-green-700 border-green-200",
+    class: "bg-emerald-400/10 text-emerald-300 border-emerald-400/25",
   },
   "butuh-cepat": {
     label: "Butuh Cepat",
-    class: "bg-yellow-100 text-yellow-700 border-yellow-200",
+    class: "bg-amber-400/10 text-amber-300 border-amber-400/25",
   },
-  urgent: { label: "Urgent", class: "bg-red-100 text-red-700 border-red-200" },
+  urgent: { 
+    label: "Urgent", 
+    class: "bg-rose-400/10 text-rose-300 border-rose-400/25" 
+  },
 };
 
 const STATUS_CONFIG = {
-  open: { label: "Open", class: "bg-blue-100 text-blue-700 border-blue-200" },
+  open: { label: "Open", class: "bg-sky-400/10 text-sky-300 border-sky-400/25" },
   "in-progress": {
     label: "In Progress",
-    class: "bg-purple-100 text-purple-700 border-purple-200",
+    class: "bg-violet-400/10 text-violet-300 border-violet-400/25",
   },
   solved: {
     label: "Solved",
-    class: "bg-emerald-100 text-emerald-700 border-emerald-200",
+    class: "bg-emerald-400/20 text-emerald-300 border-emerald-400/40",
   },
 };
 
@@ -37,8 +40,8 @@ export default function PostCard({ problem }: { problem: Problem }) {
   return (
     <Link href={`/post/${problem.id}`}>
       <div
-        className={`group relative rounded-2xl border bg-card p-4 transition-all duration-200 hover:border-primary/40 hover:shadow-md hover:shadow-primary/5 ${
-          isSolved ? "border-emerald-200/60" : ""
+        className={`group relative rounded-2xl border border-white/5 bg-white/5 p-4 backdrop-blur-md transition-all duration-300 hover:border-amber-400/30 hover:bg-white/10 hover:shadow-[0_8px_32px_rgba(245,158,11,0.1)] ${
+          isSolved ? "border-emerald-400/30" : ""
         }`}
       >
         {/* Solved indicator strip */}

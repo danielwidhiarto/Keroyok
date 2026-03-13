@@ -39,14 +39,14 @@ export default function Navbar() {
   const level = profile ? getLevelFromRep(profile.reputation) : null;
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+    <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-[#08111e]/80 backdrop-blur-xl transition-colors">
       <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-4">
         <Link
           href="/feed"
           className="flex items-center gap-1.5 font-bold text-lg"
         >
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">
-            <Zap className="h-4 w-4 text-primary-foreground" />
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-400/15 border border-amber-400/30">
+            <Zap className="h-4 w-4 text-amber-400" />
           </div>
           <span>Keroyok</span>
         </Link>
@@ -69,14 +69,14 @@ export default function Navbar() {
           >
             <Bell className="h-5 w-5" />
             {unreadCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+              <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-400 px-1 text-[10px] font-bold text-amber-950 shadow-[0_0_10px_rgba(245,158,11,0.3)]">
                 {unreadCount > 9 ? "9+" : unreadCount}
               </span>
             )}
           </Link>
 
           <DropdownMenu>
-            <DropdownMenuTrigger className="h-9 w-9 rounded-full cursor-pointer outline-none ring-2 ring-transparent hover:ring-primary/20 transition-all">
+            <DropdownMenuTrigger className="h-9 w-9 rounded-full cursor-pointer outline-none ring-2 ring-transparent hover:ring-amber-400/30 transition-all">
               <Avatar className="h-9 w-9">
                 <AvatarImage src={profile?.photoURL ?? undefined} />
                 <AvatarFallback>

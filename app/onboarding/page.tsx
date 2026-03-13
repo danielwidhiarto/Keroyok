@@ -130,8 +130,8 @@ export default function OnboardingPage() {
               exit={{ opacity: 0, x: -20 }}
               className="onboarding-card"
             >
-              <h2 className="text-xl font-bold mb-1">Skill kamu apa aja? 🎯</h2>
-              <p className="text-muted-foreground text-sm mb-6">
+              <h2 className="onboarding-h2">Skill kamu apa aja? 🎯</h2>
+              <p className="onboarding-sub">
                 Pilih maksimal 5 skill. Kamu akan di-match ke masalah yang butuh
                 skill ini.
               </p>
@@ -145,8 +145,8 @@ export default function OnboardingPage() {
                       onClick={() => toggleSkill(skill)}
                       className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-all ${
                         selected
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-border bg-background hover:border-primary/50"
+                          ? "border-amber-400 bg-amber-400/20 text-amber-300"
+                          : "border-white/10 bg-white/5 text-slate-400 hover:border-amber-400/50"
                       }`}
                     >
                       {selected && <Check className="h-3.5 w-3.5" />}
@@ -185,12 +185,10 @@ export default function OnboardingPage() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="rounded-2xl border bg-card p-8"
+              className="onboarding-card"
             >
-              <h2 className="text-xl font-bold mb-1">
-                Preferensi notifikasi 🔔
-              </h2>
-              <p className="text-muted-foreground text-sm mb-6">
+              <h2 className="onboarding-h2">Preferensi notifikasi 🔔</h2>
+              <p className="onboarding-sub">
                 Mau dikabari kalau ada masalah yang butuh skill kamu?
               </p>
 
@@ -212,8 +210,8 @@ export default function OnboardingPage() {
                     onClick={() => setNotifyOnSkillMatch(opt.value)}
                     className={`rounded-xl border p-4 text-left transition-all ${
                       notifyOnSkillMatch === opt.value
-                        ? "border-primary bg-primary/5"
-                        : "border-border hover:border-primary/40"
+                        ? "border-amber-400 bg-amber-400/10"
+                        : "border-white/10 bg-white/5 hover:border-amber-400/40"
                     }`}
                   >
                     <p className="font-medium text-sm">{opt.label}</p>
