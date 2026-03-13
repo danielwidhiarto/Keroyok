@@ -45,8 +45,8 @@ export default function Navbar() {
           href="/feed"
           className="flex items-center gap-1.5 font-bold text-lg"
         >
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-400/15 border border-amber-400/30">
-            <Zap className="h-4 w-4 text-amber-400" />
+          <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-amber-400/5 border border-amber-400/20">
+            <img src="/logo.png" alt="Keroyok Logo" className="h-full w-full object-cover scale-150" />
           </div>
           <span>Keroyok</span>
         </Link>

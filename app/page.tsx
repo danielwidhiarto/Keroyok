@@ -209,8 +209,8 @@ export default function RootPage() {
       <nav className="landing-nav">
         <div className="landing-nav-inner">
           <div className="flex items-center gap-2">
-            <div className="landing-logo-icon">
-              <Zap className="h-4 w-4 text-amber-400" />
+            <div className="landing-logo-icon overflow-hidden">
+              <img src="/logo.png" alt="Keroyok Logo" className="w-full h-full object-cover scale-150" />
             </div>
             <span className="font-bold text-white text-lg tracking-tight">Keroyok</span>
           </div>
@@ -458,8 +458,8 @@ export default function RootPage() {
 
       <footer className="landing-footer">
         <div className="flex items-center justify-center gap-2 mb-2">
-          <div className="landing-logo-icon">
-            <Zap className="h-3 w-3 text-amber-400" />
+          <div className="landing-logo-icon overflow-hidden">
+            <img src="/logo.png" alt="Keroyok Logo" className="w-full h-full object-cover scale-150 opacity-70" />
           </div>
           <span className="font-semibold text-white/70 text-sm">Keroyok</span>
         </div>

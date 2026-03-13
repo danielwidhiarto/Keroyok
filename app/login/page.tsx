@@ -113,9 +113,9 @@ export default function LoginPage() {
               initial={{ scale: 0.55, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.1, type: "spring", stiffness: 220 }}
-              className="login-logo"
+              className="login-logo overflow-hidden border border-amber-400/20 bg-amber-400/5 shadow-[0_0_20px_rgba(245,158,11,0.15)] ring-1 ring-amber-400/20"
             >
-              <Zap className="h-10 w-10 text-amber-400" />
+              <img src="/logo.png" alt="Keroyok Logo" className="w-full h-full object-cover scale-150" />
             </motion.div>
             <h1 className="login-title">Keroyok</h1>
             <p className="login-subtitle">

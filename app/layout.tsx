@@ -9,6 +9,10 @@ export const metadata: Metadata = {
   title: "Keroyok — Selesaikan masalah bareng komunitas",
   description:
     "Post masalah, AI match ke orang yang tepat, komunitas keroyok bareng.",
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({
