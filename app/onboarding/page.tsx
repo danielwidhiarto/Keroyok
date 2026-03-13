@@ -59,23 +59,24 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-background to-muted px-4">
-      <div className="w-full max-w-md">
+    <div className="onboarding-page">
+      {/* BG */}
+      <div className="landing-bg" />
+      <div className="orb orb-gold" style={{ opacity: 0.12 }} />
+      <div className="orb orb-green" style={{ opacity: 0.08 }} />
+
+      <div className="onboarding-inner">
         {/* Progress */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-muted-foreground">
-              Langkah {step} dari 3
-            </span>
-            <span className="text-sm text-muted-foreground">
-              {Math.round((step / 3) * 100)}%
-            </span>
+          <div className="onboarding-progress-label">
+            <span>Langkah {step} dari 3</span>
+            <span>{Math.round((step / 3) * 100)}%</span>
           </div>
-          <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+          <div className="onboarding-progress-track">
             <motion.div
-              className="h-full rounded-full bg-primary"
+              className="onboarding-progress-fill"
               animate={{ width: `${(step / 3) * 100}%` }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.35 }}
             />
           </div>
         </div>
@@ -87,12 +88,10 @@ export default function OnboardingPage() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="rounded-2xl border bg-card p-8"
+              className="onboarding-card"
             >
-              <h2 className="text-xl font-bold mb-1">Kenalan dulu yuk! 👋</h2>
-              <p className="text-muted-foreground text-sm mb-6">
-                Siapa nama kamu?
-              </p>
+              <h2 className="onboarding-h2">Kenalan dulu yuk! 👋</h2>
+              <p className="onboarding-sub">Siapa nama kamu?</p>
 
               <div className="flex flex-col items-center gap-4 mb-6">
                 <Avatar className="h-20 w-20">
@@ -129,7 +128,7 @@ export default function OnboardingPage() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="rounded-2xl border bg-card p-8"
+              className="onboarding-card"
             >
               <h2 className="text-xl font-bold mb-1">Skill kamu apa aja? 🎯</h2>
               <p className="text-muted-foreground text-sm mb-6">

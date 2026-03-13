@@ -1,17 +1,66 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { motion } from "framer-motion";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { buttonVariants } from "@/components/ui/button";
 import PostCard from "@/components/PostCard";
 import { getProblems } from "@/lib/firebase/firestore";
 import { useAuth } from "@/contexts/AuthContext";
+import { cn } from "@/lib/utils";
 import type { Problem } from "@/types";
+import { Plus, Sparkles } from "lucide-react";
 
-function EmptyState({ message }: { message: string }) {
+function EmptyState({
+  message,
+  showCta = false,
+}: {
+  message: string;
+  showCta?: boolean;
+}) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="text-4xl mb-3">🌵</div>
-      <p className="text-muted-foreground text-sm">{message}</p>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="flex flex-col items-center justify-center rounded-2xl border border-dashed py-16 text-center"
+    >
+      <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
+        <Sparkles className="h-6 w-6 text-muted-foreground" />
+      </div>
+      <p className="text-sm text-muted-foreground">{message}</p>
+      {showCta && (
+        <Link
+          href="/post/new"
+          className={cn(buttonVariants({ size: "sm" }), "mt-4 gap-1.5")}
+        >
+          <Plus className="h-4 w-4" />
+          Post Masalah Pertamamu
+        </Link>
+      )}
+    </motion.div>
+  );
+}
+
+function Skeleton() {
+  return (
+    <div className="flex flex-col gap-3">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="rounded-2xl border bg-card p-4 animate-pulse">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="h-6 w-6 rounded-full bg-muted" />
+            <div className="h-3 w-24 rounded-full bg-muted" />
+          </div>
+          <div className="h-4 w-3/4 rounded-full bg-muted mb-2" />
+          <div className="h-3 w-full rounded-full bg-muted mb-2" />
+          <div className="h-3 w-2/3 rounded-full bg-muted mb-3" />
+          <div className="flex gap-2">
+            <div className="h-5 w-14 rounded-full bg-muted" />
+            <div className="h-5 w-14 rounded-full bg-muted" />
+            <div className="h-5 w-16 rounded-full bg-muted" />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -23,26 +72,25 @@ function ProblemList({
   problems: Problem[];
   loading: boolean;
 }) {
-  if (loading) {
-    return (
-      <div className="flex flex-col gap-3">
-        {[1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className="h-32 rounded-xl border bg-muted/50 animate-pulse"
-          />
-        ))}
-      </div>
-    );
-  }
+  if (loading) return <Skeleton />;
   if (!problems.length)
     return (
-      <EmptyState message="Belum ada masalah di sini. Jadilah yang pertama!" />
+      <EmptyState
+        message="Belum ada masalah di sini. Jadilah yang pertama!"
+        showCta
+      />
     );
   return (
     <div className="flex flex-col gap-3">
-      {problems.map((p) => (
-        <PostCard key={p.id} problem={p} />
+      {problems.map((p, i) => (
+        <motion.div
+          key={p.id}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: i * 0.05, duration: 0.3 }}
+        >
+          <PostCard problem={p} />
+        </motion.div>
       ))}
     </div>
   );
@@ -86,7 +134,7 @@ export default function FeedPage() {
   return (
     <div>
       <Tabs defaultValue="latest" onValueChange={handleTabChange}>
-        <TabsList className="mb-4 w-full">
+        <TabsList className="mb-5 w-full">
           <TabsTrigger value="latest" className="flex-1">
             Terbaru
           </TabsTrigger>
@@ -94,7 +142,7 @@ export default function FeedPage() {
             Trending
           </TabsTrigger>
           <TabsTrigger value="match" className="flex-1">
-            Untukku ✨
+            Untukku
           </TabsTrigger>
         </TabsList>
         <TabsContent value="latest">
@@ -105,7 +153,7 @@ export default function FeedPage() {
         </TabsContent>
         <TabsContent value="match">
           {!profile?.skills?.length ? (
-            <EmptyState message="Tambahkan skills di profil supaya kami bisa match kamu ke masalah yang tepat 🎯" />
+            <EmptyState message="Tambahkan skills di profil supaya kami bisa match kamu ke masalah yang tepat" />
           ) : (
             <ProblemList problems={matched} loading={loadingMatch} />
           )}

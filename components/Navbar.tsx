@@ -1,10 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Bell, Plus, LogOut, User, Trophy, Settings } from "lucide-react";
+import { Bell, Plus, LogOut, User, Trophy, Settings, Zap } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,12 +15,21 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
 import { signOut } from "@/lib/firebase/auth";
+import { getNotifications } from "@/lib/firebase/firestore";
 import { getLevelFromRep } from "@/constants/levels";
 import { cn } from "@/lib/utils";
 
 export default function Navbar() {
   const { user, profile } = useAuth();
   const router = useRouter();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+    getNotifications(user.uid).then((notifs) => {
+      setUnreadCount(notifs.filter((n) => !n.read).length);
+    });
+  }, [user]);
 
   async function handleSignOut() {
     await signOut();
@@ -29,13 +39,15 @@ export default function Navbar() {
   const level = profile ? getLevelFromRep(profile.reputation) : null;
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-4">
         <Link
           href="/feed"
           className="flex items-center gap-1.5 font-bold text-lg"
         >
-          <span className="text-2xl">⚡</span>
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">
+            <Zap className="h-4 w-4 text-primary-foreground" />
+          </div>
           <span>Keroyok</span>
         </Link>
 
@@ -50,13 +62,21 @@ export default function Navbar() {
 
           <Link
             href="/notifications"
-            className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}
+            className={cn(
+              buttonVariants({ variant: "ghost", size: "icon" }),
+              "relative",
+            )}
           >
             <Bell className="h-5 w-5" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
           </Link>
 
           <DropdownMenu>
-            <DropdownMenuTrigger className="h-9 w-9 rounded-full cursor-pointer outline-none">
+            <DropdownMenuTrigger className="h-9 w-9 rounded-full cursor-pointer outline-none ring-2 ring-transparent hover:ring-primary/20 transition-all">
               <Avatar className="h-9 w-9">
                 <AvatarImage src={profile?.photoURL ?? undefined} />
                 <AvatarFallback>
